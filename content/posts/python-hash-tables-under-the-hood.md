@@ -1,7 +1,14 @@
 ---
 title: "Python Hash Tables Under the Hood"
 date: 2020-06-30T18:53:11+03:00
-draft: true
+draft: false
+tags:
+    - python
+    - hash-tables
+    - intermediate
+    - dictionary
+toc: true
+description: Are you a Python developer eager to learn more about the internals of the language, and to better understand how Python hash tables and data structures work? Or maybe you are experienced in other programming languages and want to understand how and where hash tables are implemented in Python? You've come to the right place!
 ---
 
 Are you a Python developer eager to learn more about the internals of the language, and to better understand how Python hash tables and data structures work? Or maybe you are experienced in other programming languages and want to understand how and where hash tables are implemented in Python? You've come to the right place!
@@ -28,8 +35,7 @@ Before diving into the Python implementation details, you first need to understa
 
 Have you ever thought about how a Python dictionary is stored in memory? The memory in our computers can be thought of as a simple array with numeric indexes:
 
-{% img 'python-hash-tables-memory-array' centered=True %}
-
+{{< img class="white-img-div" src="/images/memory-array.png" >}}
 So how come Python knows which value belongs to which key, when using non numeric keys? The simplest solution would be to have each element in the array store both key and value, iterate over the array and check element by element, until finding the one that contains the desired key. This solution is far from being perfomance efficient, as it would require iterating through the array repeatedly -- And this is where hash tables come to play.
 
 A hash table is a structure that is designed to store a list of key-value pairs, without compromising on speed and efficiency of manipulating and searching the structure.
@@ -48,17 +54,11 @@ You should start off with a simple example: A dictionary-like object, containing
 
 As for the hash function, you would need a method to turn the string keys into numeric values so you can quickly look them up in the memory.
 
-{% exercise "Try it yourself" %}
-
-Try to think of a simple operation to perform on string values to turn them into numeric values.
-
-{% endexercise %}
-
-{% solution "Try it yourself" %}
+{{< exercise id="basic-hash" name="Try it yourself" text="Try to think of a simple operation to perform on string values to turn them into numeric values." >}}
 
 There are many methods for achieveing that. How about calculating the length of each key?
 
-{% endsolution %}
+{{< / exercise >}}
 
 So you've decided to calculate the length of the string values, awesome! Don't forget that the numeric values must be within 0 to 3 for them to fit inside the 3 elements array. You can use the modulo operator on the lengths for that:
 
@@ -68,7 +68,7 @@ length of the key % table_size (3)
 
 For example, `avocados` has 8 letters, therefore it would be placed in the 2nd index. This is the final array:
 
-{% img 'python-hash-tables-first-hash-table' centered=True %}
+{{< img class="white-img-div" src="/images/first-hash-table.png" >}}
 
 Hurrah! You've just built your first hash table! Hold on for a second there. What happens when two keys has the same length? You won't be able to insert both at the same index. This is called a **hash collision**.
 
@@ -80,13 +80,13 @@ Hash collisions are practically unavoidable when hashing a random subset of a la
 
     Consider the following example of a simple hash table mapping names to phone numbers using your hash function from earlier:
 
-{% img 'python-hash-tables-open-addressing' centered=True %}
+{{< img class="white-img-div" src="/images/open-addressing.png" >}}
 
 _John_ and _Lisa_ collide since they both hash to the index `0`. _Lisa_ was inserted after _John_, so it got inserted into one index further - `1`. Note that _Sandra Dee_ has a unique hash, but nevertheless collided with _Lisa Smith_, that had previously collided with _John Smith_.
 
 -   **Separate Chaining:** As opposed to open addressing, this strategy consists of storing multiple arrays. Each record contains a separate array which holds all of the elements with the same calculated index. The following is the sample table from earlier, using the separate chaining strategy:
 
-{% img 'python-hash-tables-separate-chaining' centered=True %}
+{{< img class="white-img-div" src="/images/separate-chaining.png" >}}
 
 This time, _Sandra Dee_ did not collide with _Sandra_ since each element holds a pointer to an array of collided records.
 
@@ -102,23 +102,19 @@ Let's dive into some of the internals to better understand how all of these new 
 
 Python hash function takes a hashable object and hashes into 32/64 bits (depends on the system architecture). The bits are well distributed as can be seen in the following example, showing two very similar strings - "consecutive strings", commonly used in dictionaries, with very different hash values:
 
-```pycon
+```python
 
-```
+>>> "{0:b}".format(hash('hash1'))
+>>> '110000010001001001011000101001010110101110010010000001101111'
 
-> > > "{0:b}".format(hash('hash1'))
-> > > '110000010001001001011000101001010110101110010010000001101111'
-
-> > > "{0:b}".format(hash('hash'))
-> > > '101110001101101111011001100001110000000110011011000110110000'
-
-```
+>>> "{0:b}".format(hash('hash'))
+>>> '101110001101101111011001100001110000000110011011000110110000'
 
 ```
 
 This distribution lowers the odds of a hash collision, which in turn makes the dictionary much faster. Furthermore, you should know that a hash value is only constant for the current instance of the process. You might have stumbled upon different hashes of the same object and wondered why it happened. The main reason for this phenomenon is security related: Hash tables are vulnerable to hash collision DoS attacks when using constant hash values. Python 3.6 introduced an implementation of [SipHash](https://en.wikipedia.org/wiki/SipHash) to prevent these attacks. You can read more about it on [PEP 456](https://www.python.org/dev/peps/pep-0456/). The following demonstrates different hashes on two different runs:
 
-```pycon
+```python
 >>> hash("hash")
 832529968546820528
 
@@ -143,7 +139,7 @@ Much like linear probing, the first part of this algorithm proceeds in a fixed m
 
 In a perfect world with no collisions, deleting elements would be simple: just remove the element at the desired index so it can be refilled with other values. Unfortunately, we do not live in a perfect world, and collisions happen frequently. Remember the open addressing example from before?
 
-{% img 'python-hash-tables-open-addressing' centered=True %}
+{{< img class="white-img-div" src="/images/open-addressing.png" >}}
 
 Now assume you wanted to delete _John Smith_ from the table. Seems trivial, right? Hash _John Smith_ and delete the element located at the calculated index. Now, you might have already noticed the problem in this approach. After deleting _John_, _Sandra_ is unreachable! Hashing _Sandra_ will get us to an empty slot. For this exact reason, Python implements dummy values - Instead of completely erasing _John's_ element, it would place a fixed dummy value there. When the algorithm faces a dummy value, it knows that there was a value there but it got deleted. It then keeps probing forward.
 
@@ -153,28 +149,28 @@ Now that you know what hash tables are, how the Python hash function works and h
 
 First thing you need to know is that Python [initializes a dict with an 8 element array](https://github.com/python/cpython/blob/master/Objects/dictobject.c#L104). Experiments showed that this size suffices for most common dicts, usually created to pass keyword arguments. Each element in the array holds a [structure](https://github.com/python/cpython/blob/e42b705188271da108de42b55d9344642170aa2b/Objects/dict-common.h#L4) that contains the key, value and the hash. The hash is stored in order to not recompute it with each increase in the size of the dictionary (further explained in _Exploring Python Hash Tables Optimizations: Dictionary Resize_).
 
-{% alert %}
+{{< alert color="blue" >}}
 
-**Note:** Up until now, memory indices were displayed as decimal values. From this point onward, you will notice that memory addresses will be displayed as binary integers. Don't be scared! You can continue reading even if you're not familiar with them - I only use it for you to better understand how Python hash tables work with bits, but it's not mandatory to understand that.
+Up until now, memory indices were displayed as decimal values. From this point onward, you will notice that memory addresses will be displayed as binary integers. Don't be scared! You can continue reading even if you're not familiar with them - I only use it for you to better understand how Python hash tables work with bits, but it's not mandatory to understand that.
 
-{% endalert %}
+{{< / alert >}}
 
 On to the [lookup method](https://github.com/python/cpython/blob/master/Objects/dictobject.c#L760). Here's a simplified Python version, followed by an explanation:
 
-```python linenums="1"
-DUMMY = -2
-def lookup(key: Any, hash_: int) -> Tuple[int, Any]:
-mask = len(table) - 1
-freeslot = None
-for index in generate_probes(hash_, mask):
-    elem = table[index]
-    if elem is None:
-        return (index, None) if freeslot is None else (freeslot, DUMMY)
-    elif elem == DUMMY:
-        if freeslot is None:
-            freeslot = index
-    elif elem.key is key or (elem.hash == hash_ and elem.key == key):
-        return (index, elem)
+```python {linenos=inline}
+    DUMMY = -2
+    def lookup(key: Any, hash_: int) -> Tuple[int, Any]:
+    mask = len(table) - 1
+    freeslot = None
+    for index in generate_probes(hash_, mask):
+        elem = table[index]
+        if elem is None:
+            return (index, None) if freeslot is None else (freeslot, DUMMY)
+        elif elem == DUMMY:
+            if freeslot is None:
+                freeslot = index
+        elif elem.key is key or (elem.hash == hash_ and elem.key == key):
+            return (index, elem)
 ```
 
 -   **Line 5** calculates the index with the `generate_probes` method shown in the next code block below.
@@ -185,71 +181,12 @@ for index in generate_probes(hash_, mask):
 
 -   **Line 12** compares the identities of the keys. If they are the same object, the index is returned.
 
-If not, it compares the key value **and the hash**. As it is known, equal objects should have equal hashes, which means that objects with different hashes are not equal. If both are equal, the index is returned.
+    If not, it compares the key value **and the hash**. As it is known, equal objects should have equal hashes, which means that objects with different hashes are not equal. If both are equal, the index is returned.
 
 -   If the desired element hasn't been found yet (remember that the slot wasn't empty/dummy), this is a hash collision situation - In which the script goes back to the `generate_probes` method to compute the random new hash and then go back to the first step.
 
-```python linenums="1"
-def generate_probes(hash_: int, mask: int) -> Iterable[int]:
-    index = hash_ & mask
-    yield index
-    perturb = hash_
-    while True:
-        new_hash = index * 5 + 1 + perturb
-        yield new_hash & mask
-        perturb >>= 5
-```
-
-````
-- **Line 3** masks the hash bits with the size of the table minus one - For example, in a table with the size of 8, the last 3 bits would be taken (111 in binary equals 7 in decimal, so 3 bits can represent 0-7). The following demonstration shows a hash example with its last 3 bits taken for indexing:
-
-{% img 'python-hash-tables-last-3-bits' centered=True %}
-
-- **Line 7**: Remember that the algorithm goes back to the `generate_probes` method if the desired wasn't found? This is the line that it goes back to. It computes the new hash using a random probe and yields control back to the `lookup` method.
-
-If you were to write the search operation, it would have looked along the lines of the following:
-
-```python
-def search(key: Any) -> Any:  # usually implemented as __getitem__
-    hashvalue = hash(key)
-    index, elem = lookup(key, hashvalue)
-    if elem is None or elem == DUMMY:
-        raise KeyError(key)
-    return table[index]
-````
-
-As I've mentioned before, the `DUMMY` and `None` handling is done within the caller - while this specific method raises a `KeyError`, other operations could have still used that index as you will soon see.
-
-{% exercise "Comprehension Check" %}
-
-Would the insertion operation use the index received from the lookup method even if the element is `None` or `DUMMY`?
-
-{% endexercise %}
-
-{% solution "Comprehension Check" %}
-
-Yes! The insertion method would be happy to receive an empty slot - It means that no hash collisions were involved in the process.
-
-{% endsolution %}
-
-### Understanding Python Sets
-
-Along with dictionaries, Python hash tables also serve as the underlying structure for sets. Both implementations are quite similar as can be seen in the [source code](https://github.com/python/cpython/blob/master/Objects/setobject.c), with the exception that sets do not store a value for each key, meaning the optimizations of Python, which are shown later in this article, are not applicable for them. The usage of hash tables for sets make the lookup operation, which is used frequently in sets in order to keep them without duplicates, quite fast (as you should know by now - It always depends on the collisions).
-
-## Exploring Python Hash Tables Optimizations
-
-The methods above are not entirely identical to Python's. I didn't want to overcomplicate things, so I've left out some details that make the Python dictionary blazing fast. The following section will guide you through building a custom dictionary, implementing the optimizations of Python hash tables.
-
-Your first step would be to create a `Dictionary` class:
-
-```python linenums="1"
-class Dictionary:
-
-    def __init__(self, *args, **kwargs):
-        """Dict initializiation"""
-
-    @staticmethod
-    def _generate_probes(hash_: int, mask: int) -> Iterable[int]:
+```python {linenos=inline}
+    def generate_probes(hash_: int, mask: int) -> Iterable[int]:
         index = hash_ & mask
         yield index
         perturb = hash_
@@ -257,30 +194,82 @@ class Dictionary:
             new_hash = index * 5 + 1 + perturb
             yield new_hash & mask
             perturb >>= 5
+```
 
-    def _lookup(self, key: Any, hashvalue: int) -> Tuple[int, Any]:
-        """The lookup method"""
+-   **Line 3** masks the hash bits with the size of the table minus one - For example, in a table with the size of 8, the last 3 bits would be taken (111 in binary equals 7 in decimal, so 3 bits can represent 0-7). The following demonstration shows a hash example with its last 3 bits taken for indexing:
 
-    def __getitem__(self, key: Any) -> Any:
-        """Get value from dict"""
+{{< img class="white-img-div" src="/images/last_3_bits.png" >}}
 
-    def __setitem__(self, key: Any, value: Any):
-        """Insert item to dict"""
+-   **Line 7**: Remember that the algorithm goes back to the `generate_probes` method if the desired wasn't found? This is the line that it goes back to. It computes the new hash using a random probe and yields control back to the `lookup` method.
 
-    def __delitem__(self, key: Any):
-        """Delete item from dict"""
+If you were to write the search operation, it would have looked along the lines of the following:
 
-    def __len__(self) -> int:
-        """Dict length"""
+```python {linenos=inline}
+    def search(key: Any) -> Any:  # usually implemented as __getitem__
+    hashvalue = hash(key)
+    index, elem = lookup(key, hashvalue)
+    if elem is None or elem == DUMMY:
+        raise KeyError(key)
+    return table[index]
+```
 
-    def __iter__(self) -> Iterable:
-        """Iterate through dictionary"""
+As I've mentioned before, the `DUMMY` and `None` handling is done within the caller - while this specific method raises a `KeyError`, other operations could have still used that index as you will soon see.
 
-    def __contains__(self, key: Any) -> bool:
-        """Check if dictionary contains a key"""
+{{< exercise id="dummy" name="Comprehension Check" text="Would the insertion operation use the index received from the lookup method even if the element is `None` or `DUMMY`?" >}}
 
-    def __repr__(self) -> str:
-        """Dict representation"""
+Yes! The insertion method would be happy to receive an empty slot - It means that no hash collisions were involved in the process.
+
+{{< / exercise >}}
+
+### Understanding Python Sets
+
+Along with dictionaries, Python hash tables also serve as the underlying structure for sets. Both implementations are quite similar as can be seen in the [source code](https://github.com/python/cpython/blob/master/Objects/setobject.c), with the exception that sets do not store a value for each key, meaning the optimizations of Python, which are shown [later](#exploring-python-hash-tables-optimizations) in this article, are not applicable for them. The usage of hash tables for sets make the lookup operation, which is used frequently in sets in order to keep them without duplicates, quite fast (as you should know by now - It always depends on the collisions).
+
+## Exploring Python Hash Tables Optimizations
+
+The methods above are not entirely identical to Python's. I didn't want to overcomplicate things, so I've left out some details that make the Python dictionary blazing fast. The following section will guide you through building a custom dictionary, implementing the optimizations of Python hash tables.
+
+Your first step would be to create a `Dictionary` class:
+
+```python {linenos=inline}
+    class Dictionary:
+
+        def __init__(self, *args, **kwargs):
+            """Dict initializiation"""
+
+        @staticmethod
+        def _generate_probes(hash_: int, mask: int) -> Iterable[int]:
+            index = hash_ & mask
+            yield index
+            perturb = hash_
+            while True:
+                new_hash = index * 5 + 1 + perturb
+                yield new_hash & mask
+                perturb >>= 5
+
+        def _lookup(self, key: Any, hashvalue: int) -> Tuple[int, Any]:
+            """The lookup method"""
+
+        def __getitem__(self, key: Any) -> Any:
+            """Get value from dict"""
+
+        def __setitem__(self, key: Any, value: Any):
+            """Insert item to dict"""
+
+        def __delitem__(self, key: Any):
+            """Delete item from dict"""
+
+        def __len__(self) -> int:
+            """Dict length"""
+
+        def __iter__(self) -> Iterable:
+            """Iterate through dictionary"""
+
+        def __contains__(self, key: Any) -> bool:
+            """Check if dictionary contains a key"""
+
+        def __repr__(self) -> str:
+            """Dict representation"""
 ```
 
 You will soon fill up these methods. Notice that `generate_probes` is now a static method - No reason for it to be an instance method since it does not use any instance attributes. `lookup` and `search` from before are not used since they both will change quite a bit.
@@ -293,7 +282,7 @@ Compact dictionaries optimize the space that hash tables occupy. Before they wer
 
 For example, before compact dictionaries, the following is how a dictionary and its corresponding memory array looked like ([taken from Raymond Hettinger's text](https://mail.python.org/pipermail/python-dev/2012-December/123028.html)):
 
-```
+```python
 d = {'timmy': 'red', 'barry': 'green', 'guido': 'blue'}
 
 [['---', '---', '---'],
@@ -338,29 +327,29 @@ Raymond Hettinger, the creator of compact dictionaries, said:
 | < 683          | 18520    | 49432    | 2.7        |
 | < 1000         | 36960    | 49432    | 1.3        |
 
-In order to implement this feature in your custom dictionary, the dictionary needs to implement two separates arrays: one for the indices and one for the actual entries. Before you do that, there are other optimizations to consider, therefore the final implementation will take place soon, in _Putting it All Together_.
+In order to implement this feature in your custom dictionary, the dictionary needs to implement two separates arrays: one for the indices and one for the actual entries. Before you do that, there are other optimizations to consider, therefore the final implementation will take place soon, in [_Putting it All Together_](#putting-it-all-together).
 
 Meanwhile, you can create the method that builds the indices array, and initialize the class with `indices`, `filled` and `used` variables:
 
-```python linenums="1"
-FREE = -1
-DUMMY = -2
+```python {linenos=inline}
+    FREE = -1
+    DUMMY = -2
 
-class Dictionary:
-    def __init__(self, *args, **kwargs):
-        self.indices = self._make_index_array(8)  # Init with an 8 elements table
-        self.used = 0  # Number of items in the dictionary
-        self.filled = 0  # Number of non-empty slots including dummy slots
+    class Dictionary:
+        def __init__(self, *args, **kwargs):
+            self.indices = self._make_index_array(8)  # Init with an 8 elements table
+            self.used = 0  # Number of items in the dictionary
+            self.filled = 0  # Number of non-empty slots including dummy slots
 
-    @staticmethod
-    def _make_index_array(n: int) -> Union[list, array.array]:
-        if n <= 2 ** 7:
-            return array.array("b", [FREE]) * n  # signed char
-        if n <= 2 ** 15:
-            return array.array("h", [FREE]) * n  # signed short
-        if n <= 2 ** 31:
-            return array.array("l", [FREE]) * n  # signed long
-        return [FREE] * n
+        @staticmethod
+        def _make_index_array(n: int) -> Union[list, array.array]:
+            if n <= 2 ** 7:
+                return array.array("b", [FREE]) * n  # signed char
+            if n <= 2 ** 15:
+                return array.array("h", [FREE]) * n  # signed short
+            if n <= 2 ** 31:
+                return array.array("l", [FREE]) * n  # signed long
+            return [FREE] * n
 ```
 
 -   The indices array is of a single type, therefore `DUMMY` and `FREE` should be of the same type.
@@ -371,11 +360,11 @@ class Dictionary:
 
 -   `_make_index_array` uses the [array](https://docs.python.org/3/library/array.html) module in order to compactly represent an array of basic values. It follows the [logic of Python source code](https://github.com/python/cpython/blob/eb8ac57af26c4eb96a8230eba7492ce5ceef7886/Objects/dictobject.c#L37) in order to determine the size of the indices.
 
-{% alert %}
+{{< alert color="blue" >}}
 
-**Note:** Compact dictionaries were implemented in Python 3.6.
+Compact dictionaries were implemented in Python 3.6.
 
-{% endalert %}
+{{< / alert >}}
 
 ### Key Sharing Dictionaries
 
@@ -383,60 +372,60 @@ Python 3.3 [introduced](https://www.python.org/dev/peps/pep-0412/) key-sharing d
 
 The following visual demonstrates three instances of the same class:
 
-{% img 'python-hash-tables-shared-keys' centered=True %}
+{{< img class="white-img-div" src="/images/shared-keys.png" >}}
 
 You can see that each instance only holds its values, while there is a single, shared place in memory for the keys.
 
 Let's implement this awesome feature in your dictionary:
 
-```python linenums="1"
-class DictKey:
-    __slots__ = ["key", "hashvalue"]  # does not need a __dict__
+```python {linenos=inline}
+    class DictKey:
+        __slots__ = ["key", "hashvalue"]  # does not need a __dict__
 
-    def __init__(self, key, hashvalue):
-        self.key = key
-        self.hashvalue = hashvalue
+        def __init__(self, key, hashvalue):
+            self.key = key
+            self.hashvalue = hashvalue
 
-    def __repr__(self):
-        return f"<DictKey {self.key}>"
+        def __repr__(self):
+            return f"<DictKey {self.key}>"
 
-class Dictionary:
+    class Dictionary:
 
-    def __init__(self, *args, **kwargs):
-        self.indices = self._make_index_array(8)  # init with an 8 elements table
-        self.keys: List[DictKey] = []
-        self.values: List[Any] = []
-        self.used = 0  # number of items in the dictionary
-        self.filled = 0  # number of non-empty slots including dummy slots
-        self.update(*args, **kwargs)
+        def __init__(self, *args, **kwargs):
+            self.indices = self._make_index_array(8)  # init with an 8 elements table
+            self.keys: List[DictKey] = []
+            self.values: List[Any] = []
+            self.used = 0  # number of items in the dictionary
+            self.filled = 0  # number of non-empty slots including dummy slots
+            self.update(*args, **kwargs)
 
-    def update(self, other=(), /, **kwargs):
-        self._sharing_keys = False
-        if isinstance(other, Dictionary):
-            if self.used > 0:
-                for key in other:
+        def update(self, other=(), /, **kwargs):
+            self._sharing_keys = False
+            if isinstance(other, Dictionary):
+                if self.used > 0:
+                    for key in other:
+                        self[key] = other[key]
+                else:
+                    self._sharing_keys = True
+                    self.indices = copy.copy(other.indices)
+                    self.keys = other.keys
+                    self.values = [None] * len(other.values)
+                    self.used = other.used
+                    self.filled = other.filled
+            elif hasattr(other, "keys"):
+                for key in other.keys():
                     self[key] = other[key]
             else:
-                self._sharing_keys = True
-                self.indices = copy.copy(other.indices)
-                self.keys = other.keys
-                self.values = [None] * len(other.values)
-                self.used = other.used
-                self.filled = other.filled
-        elif hasattr(other, "keys"):
-            for key in other.keys():
-                self[key] = other[key]
-        else:
-            for key, value in other:
+                for key, value in other:
+                    self[key] = value
+            for key, value in kwargs.items():
                 self[key] = value
-        for key, value in kwargs.items():
-            self[key] = value
 
-    def _check_keys_sharing(self):
-        """if trying to change dictionary with shared keys,
-        migrate to non shared dictionary"""
-        if self._sharing_keys:
-            self.keys = copy.copy(self.keys)
+        def _check_keys_sharing(self):
+            """if trying to change dictionary with shared keys,
+            migrate to non shared dictionary"""
+            if self._sharing_keys:
+                self.keys = copy.copy(self.keys)
 ```
 
 -   **Line 1** creates a `DictKey` class which holds a key and its hash value
@@ -463,17 +452,17 @@ class Dictionary:
 
 Python checks for the table size everytime we add a key, and if the table is two-thirds full, it would resize the hash table. If a dictionary has 50000 keys or fewer, the new size is `used_size * 4`, otherwise, it is `used_size * 2`. Remember that Python stores the hash value along with the key and the value? This is where it comes in handy! Instead of rehashing the keys when inserting them to the new bigger table, the stored hashes are used. You might wonder - What if the key object was changed? In this case, the hash should be recalculated and the stored value will be incorrect? Such a situation is impossible, since mutable types cannot be keys of a dictionary. Here's how you implement the resize operation:
 
-```python linenums="1"
-class Dictionary:
-    def _resize(self, n: int):
-        n = 2 ** n.bit_length()
-        self.indices = self._make_index_array(n)
-        for entry_index, dict_key in enumerate(self.keys):
-            for i in self._generate_probes(dict_key.hashvalue, n - 1):
-                if self.indices[i] == FREE:
-                    break
-            self.indices[i] = entry_index
-        self.filled = self.used
+```python {linenos=inline}
+    class Dictionary:
+        def _resize(self, n: int):
+            n = 2 ** n.bit_length()
+            self.indices = self._make_index_array(n)
+            for entry_index, dict_key in enumerate(self.keys):
+                for i in self._generate_probes(dict_key.hashvalue, n - 1):
+                    if self.indices[i] == FREE:
+                        break
+                self.indices[i] = entry_index
+            self.filled = self.used
 ```
 
 -   **Line 3**: Python hash table sizes are powers of 2, so we will also use powers of 2. The primary reason Python uses "round" powers of 2 is efficiency: computing `% 2**n` can be implemented using bit operations, as you've seen before.
@@ -488,16 +477,16 @@ class Dictionary:
 
 Python 3.6 added a new private version to dictionaries, incremented at each dictionary creation and at each dictionary change. The rationale is to skip dictionary lookups if the version does not change, and to use cached values instead. Your implementation can implement a version for each instance, although it won't implement the actual caching of values.
 
-```python linenums="1"
-class Dictionary:
-    __version = 0
+```python {linenos=inline}
+    class Dictionary:
+        __version = 0
 
-    def _increase_version(self):
-        self.__version = Dictionary.__version
-        Dictionary.__version += 1
+        def _increase_version(self):
+            self.__version = Dictionary.__version
+            Dictionary.__version += 1
 
-    def __init__(self, *args, **kwargs):
-        self._increase_version()
+        def __init__(self, *args, **kwargs):
+            self._increase_version()
 ```
 
 -   The `__version` variable keeps a counter of the number of dictionary instances, so each instance can have a unique version.
@@ -508,61 +497,15 @@ class Dictionary:
 
 ### Putting It All Together
 
+{{< alert color="blue" >}}
+The full code can be found [here](https://github.com/AdamGold/materials/blob/patch-1/python-hash-tables/dict_implementation.py).
+{{< / alert >}}
+
 It's time to use all these cool new methods and make your dictionary usable!
 
-{% collapse 'Full source code of dictionary_impl.py' %}
+#### `_lookup`
 
-```python linenums="1"
-DUMMY = -2
-FREE = -1
-```
-
-class DictKey:
-def **init**(self, key, hashvalue):
-self.key = key
-self.hashvalue = hashvalue
-
-    def __repr__(self):
-        return f"<DictKey {self.key}>"
-
-class Dictionary:
-\_\_version = 0
-
-    def __init__(self, *args, **kwargs):
-        self._increase_version()
-        self.indices = self._make_index_array(8)  # init with an 8 elements table
-        self.keys: List[DictKey] = []
-        self.values: List[Any] = []
-        self.used = 0  # number of items in the dictionary
-        self.filled = 0  # number of non-empty slots including dummy slots
-        self.update(*args, **kwargs)
-
-    def _increase_version(self):
-        """Increase version of current instance and of class attribute"""
-        self.__version = Dictionary.__version
-        Dictionary.__version += 1
-
-    @staticmethod
-    def _make_index_array(n: int) -> Union[list, array.array]:
-        "New sequence of indices using the smallest possible datatype"
-        if n <= 2 ** 7:
-            return array.array("b", [FREE]) * n  # signed char
-        if n <= 2 ** 15:
-            return array.array("h", [FREE]) * n  # signed short
-        if n <= 2 ** 31:
-            return array.array("l", [FREE]) * n  # signed long
-        return [FREE] * n
-
-    @staticmethod
-    def _generate_probes(hash_: int, mask: int) -> Iterable[int]:
-        index = hash_ & mask
-        yield index
-        perturb = hash_
-        while True:
-            new_hash = index * 5 + 1 + perturb
-            yield new_hash & mask
-            perturb >>= 5
-
+```python {linenos=inline}
     def _lookup(self, key: Any, hashvalue: int) -> Tuple[int, Any]:
         mask = len(self.indices) - 1
         freeslot = None
@@ -579,42 +522,26 @@ class Dictionary:
                     dict_key.hashvalue == hashvalue and dict_key.key == key
                 ):
                     return (index, entry_index)
+```
 
-    def update(self, other=(), /, **kwargs):
-        self._sharing_keys = False
-        if isinstance(other, Dictionary):
-            if self.used > 0:
-                for key in other:
-                    self[key] = other[key]
-            else:
-                self._sharing_keys = True
-                self.indices = copy.copy(other.indices)
-                self.keys = other.keys
-                self.values = [None] * len(other.values)
-                self.used = other.used
-                self.filled = other.filled
-        elif hasattr(other, "keys"):
-            for key in other.keys():
-                self[key] = other[key]
-        else:
-            for key, value in other:
-                self[key] = value
-        for key, value in kwargs.items():
-            self[key] = value
+It's quite similar to the `lookup` method from earlier, only this time it uses `self.indices` as the hash table, `FREE` to check for empty slots instead of `None`, and `self.keys` to check for equality and identity of keys.
 
-    def _check_keys_sharing(self):
-        """if trying to change dictionary with shared keys,
-        migrate to non shared dictionary"""
-        if self._sharing_keys:
-            self.keys = copy.copy(self.keys)
+#### `__getitem__`
 
+```python {linenos=inline}
     def __getitem__(self, key: Any) -> Any:
         hashvalue = hash(key)
         _, entry_index = self._lookup(key, hashvalue)
         if entry_index < 0:  # FREE or DUMMY
             raise KeyError(key)
         return self.values[entry_index]
+```
 
+Same here! Very similar to the `search` method you've already seen, `__getitem__` now uses a simple `< 0` check to check if the slot is empty or dummy. If so, it returns a `KeyError`. If not, it returns the value from the `values` table.
+
+#### `__setitem__`
+
+```python {linenos=inline}
     def __setitem__(self, key: Any, value: Any):
         self._check_keys_sharing()
         hashvalue = hash(key)
@@ -633,142 +560,24 @@ class Dictionary:
         else:
             if value != self.values[entry_index]:  # only if its a different value
                 self._increase_version()
-                self.values[entry_index] = value
-
-    def __delitem__(self, key: Any):
-        self._check_keys_sharing()
-        hashvalue = hash(key)
-        indices_index, entry_index = self._lookup(key, hashvalue)
-        if entry_index < 0:
-            raise KeyError(key)
-
-        self._increase_version()
-        self.used -= 1
-        self.indices[indices_index] = DUMMY
-        # del self.entries[entry_index]
-        # swap with the last item to avoid holes
-        if entry_index != self.used:
-            last_key_dict = self.keys[-1]
-            last_value = self.values[-1]
-            last_entry_indices_index, _ = self._lookup(
-                last_key_dict.key, last_key_dict.hashvalue
-            )
-            self.indices[last_entry_indices_index] = entry_index
-            self.keys[entry_index] = last_key_dict
-            self.values[entry_index] = last_value
-        self.keys.pop()
-        self.values.pop()
-
-    def _resize(self, n: int):
-        n = 2 ** n.bit_length()
-        self.indices = self._make_index_array(n)
-        for entry_index, dict_key in enumerate(self.keys):
-            for i in self._generate_probes(dict_key.hashvalue, n - 1):
-                if self.indices[i] == FREE:
-                    break
-            self.indices[i] = entry_index
-        self.filled = self.used
-
-    def __contains__(self, key: Any) -> bool:
-        _, entry_index = self._lookup(key, hash(key))
-        return entry_index >= 0
-
-    def __len__(self) -> int:
-        return self.used
-
-    def __iter__(self):
-        return iter([dict_key.key for dict_key in self.keys])
-
-    def __repr__(self) -> str:
-        return f"<Dictionary keys={self.keys}, values={self.values}, version={self.__version}>"
-
-    def show(self):
-        """Used for nicely dispalying the dictionary"""
-        print("=" * 50)
-        print(f"Dictionary version {self.__version}")
-        print("-" * 50)
-        print(f"Indices: {list(self.indices)}")
-        for i, row in enumerate(zip(self.keys, self.values)):
-            print(i, row)
-        print("=" * 50)
-
-````
-
-{% endcollapse %}
-
-#### `_lookup`
-
-```python linenums="1"
-def _lookup(self, key: Any, hashvalue: int) -> Tuple[int, Any]:
-    mask = len(self.indices) - 1
-    freeslot = None
-    for index in self._generate_probes(hashvalue, mask):
-        entry_index = self.indices[index]
-        if entry_index == FREE:
-            return (index, FREE) if freeslot is None else (freeslot, DUMMY)
-        elif entry_index == DUMMY:
-            if freeslot is None:
-                freeslot = index
-        else:
-            dict_key = self.keys[entry_index]
-            if dict_key.key is key or (
-                dict_key.hashvalue == hashvalue and dict_key.key == key
-            ):
-                return (index, entry_index)
-````
-
-It's quite similar to the `lookup` method from earlier, only this time it uses `self.indices` as the hash table, `FREE` to check for empty slots instead of `None`, and `self.keys` to check for equality and identity of keys.
-
-#### `__getitem__`
-
-```python linenums="1"
-def __getitem__(self, key: Any) -> Any:
-    hashvalue = hash(key)
-    _, entry_index = self._lookup(key, hashvalue)
-    if entry_index < 0:  # FREE or DUMMY
-        raise KeyError(key)
-    return self.values[entry_index]
-```
-
-Same here! Very similar to the `search` method you've already seen, `__getitem__` now uses a simple `< 0` check to check if the slot is empty or dummy. If so, it returns a `KeyError`. If not, it returns the value from the `values` table.
-
-#### `__setitem__`
-
-```python linenums="1"
-def __setitem__(self, key: Any, value: Any):
-    self._check_keys_sharing()
-    hashvalue = hash(key)
-    indices_index, entry_index = self._lookup(key, hashvalue)
-    if entry_index < 0:  # FREE or DUMMY
-        self._increase_version()
-        self.indices[indices_index] = self.used
-        dict_key = DictKey(key=key, hashvalue=hashvalue)
-        self.keys.append(dict_key)
-        self.values.append(value)
-        self.used += 1
-        if entry_index == FREE:
-            self.filled += 1  # DUMMY? `filled` would have already contained it
-            if self.filled / len(self.indices) > 2 / 3:
-                self._resize(3 * len(self))
-    else:
-        if value != self.values[entry_index]:  # only if its a different value
-            self._increase_version()
-            self.values[entry_index] = v
+                self.values[entry_index] = v
 ```
 
 -   **Line 2** converts the dictionary to a non shared dictionary.
 
 -   **Line 6** increases the version if the slot is unoccupied.
 
-    -   **Line 7** fills the hashed index in `self.indices` with the index of the key and value which is essentially `self.used` because it's the last index of `keys` and `values`.
-    -   **Line 13** increases `self.filled` If that slot was free. That's done because if it weren't free, than `self.filled` would have already included it.
-    -   **Line 14** resizes the table by 3 if it's more than 2/3 filled. It follows the logic of [C Python resize](https://github.com/python/cpython/blob/master/Objects/dictobject.c#L429).
+-   **Line 7** fills the hashed index in `self.indices` with the index of the key and value which is essentially `self.used` because it's the last index of `keys` and `values`.
 
--   **Line 17** checks if the new value differs from the value that is about to be replaced. The dictionary does not increase the version if nothing changes.
+-   **Line 13** increases `self.filled` If that slot was free. That's done because if it weren't free, than `self.filled` would have already included it.
 
-    #### `__delitem__`
+-   **Line 14** resizes the table by 3 if it's more than 2/3 filled. It follows the logic of [C Python resize](https://github.com/python/cpython/blob/master/Objects/dictobject.c#L429).
 
-    ```python linenums="1"
+*   **Line 17** checks if the new value differs from the value that is about to be replaced. The dictionary does not increase the version if nothing changes.
+
+#### `__delitem__`
+
+```python {linenos=inline}
     def __delitem__(self, key: Any):
         self._check_keys_sharing()
         hashvalue = hash(key)
@@ -791,36 +600,38 @@ def __setitem__(self, key: Any, value: Any):
             self.values[entry_index] = last_value
         self.keys.pop()
         self.values.pop()
-    ```
+```
 
-    -   **Line 2** converts the dictionary to a non shared dictionary.
+-   **Line 2** converts the dictionary to a non shared dictionary.
 
 -   **Line 6** raises `KeyError` If the slot is unoccupied.
 
-    -   **Line 10** inserts a `DUMMY` value instead of the actual value.
-    -   **Line 12**: You might have thought that a `del` operation might suffice, but it would have left a hole inside the `keys` and `values` table. These tables must not contain any holes. The solution is to swap with the last item and then delete the last item.
+-   **Line 10** inserts a `DUMMY` value instead of the actual value.
+
+-   **Line 12**: You might have thought that a `del` operation might suffice, but it would have left a hole inside the `keys` and `values` table. These tables must not contain any holes. The solution is to swap with the last item and then delete the last item.
 
 -   **Line 18** changes the swapped element's indices value to the current spot that's being swapped.
 
-    #### `__contains__`
+#### `__contains__`
 
-    ```python
+```python {linenos=inline}
     def __contains__(self, key: Any) -> bool:
         _, entry_index = self._lookup(key, hash(key))
         return entry_index >= 0
-    ```
+```
 
-````
 This method checks if the dictionary contains a certain key. It does so by checking the result of `_lookup`, it only contains indices below zero in the case of `DUMMY` or `FREE`.
 
-    #### `__iter__`
+#### `__iter__`
 
-    ```python
-def __iter__(self):
-        return iter([dict_key.key for dict_key in self.keys])
-````
+```python {linenos=inline}
+    def __iter__(self):
+            return iter([dict_key.key for dict_key in self.key]s)
+```
 
 The dictionary's keys list holds `DictKey` instances. This method creates a new list of actual the actual keys (without the wrapper class) and wraps it inside of an iterable.
+
+### Using your custom dictionary
 
 Here's how you can use your brand new dictionary:
 
@@ -849,21 +660,21 @@ new_d = Dictionary(d)
 new_d["key1"] = "other_value"  # No longer sharing keys
 ```
 
-{% alert %}
+{{< alert color="blue" >}}
 
 [`MutableMapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping) could have been inherited in order to implement common methods like `update` and `pop`. I decided not to use it in order to showcase the `update` method.
 
-{% endalert %}
+{{< / alert >}}
 
 ### Dictionaries Order
 
 As a side effect of using compact dictionaries, when iterating over the dictionary, the array of indices is not needed as the elements are sequentially returned from the entries table. Since elements are added to the end of the entries each time, the dictionary automatically preserves the order of entries.
 
-{% alert %}
+{{< alert color="blue" >}}
 
-**Note: ** It was an implementation detail in Python 3.6, but [was declared a feature](https://mail.python.org/pipermail/python-dev/2017-December/151283.html) in Python 3.7.
+It was an implementation detail in Python 3.6, but [was declared a feature](https://mail.python.org/pipermail/python-dev/2017-December/151283.html) in Python 3.7.
 
-{% endalert %}
+{{< / alert >}}
 
 ## Hashing Your Custom Classes
 
@@ -891,13 +702,7 @@ class CustomClass:
 
 You can see that `hash` is being used for hashing a tuple of the custom class attributes, which should be fast enough, and that same tuple is also used for equality check.
 
-{% exercise "Comprehension Check" %}
-
-Why is it important for hashable objects to contain `__eq__`?
-
-{% endexercise %}
-
-{% solution "Comprehension Check" %}
+{{< exercise id="eq_hash" name="Comprehension Check" text="Why is it important for hashable objects to contain `__eq__`?" >}}
 
 You've seen the implementation of the lookup method, which contained the following line (line 63):
 
@@ -909,7 +714,7 @@ if dict_key.key is key or (
 
 Notice that `dict_key.key` and `key` are both hashable objects that are being compared.
 
-{% endsolution %}
+{{< / exercise >}}
 
 ## Understanding When to Use Python Hash Tables
 
@@ -917,21 +722,15 @@ Python hash tables (and hash tables in general) trade space for time. The need t
 
 ### set vs list
 
-{% exercise "Comprehension Check" %}
-
-What's faster, set or a list, when checking if a certain value exists?
-
-{% endexercise %}
-
-{% solution "Comprehension Check" %}
+{{< exercise id="whats-faster" name="Comprehension Check" text="What's faster, set or a list, when checking if a certain value exists?" >}}
 
 Because sets are implemented as hash tables, and hash tables make lookups much faster because of the hash function - A set would be much faster in lookups!
 
-{% endsolution %}
+{{< / exercise >}}
 
 -   **Speed**: You already know that lookups are faster in sets than list - That's the whole point of having a hash table. Iterating over a list is slighly faster than sets. Don't take my word for it:
 
-```pycon
+```python
 >>> from timeit import timeit
 >>> def test_iterating(iterable):
 ...     for i in iterable:
@@ -956,74 +755,69 @@ Because sets are implemented as hash tables, and hash tables make lookups much f
 65.991043548
 ```
 
--   **Space: **If space is your main concern rather than speed, you are probably better off with lists - The difference is quite large.
+-   **Space:** If space is your main concern rather than speed, you are probably better off with lists - The difference is quite large.
 
-    ```pycon
-    >>> set1 = set(range(10000))
-    >>> list1 = list(range(10000))
-    >>> import sys
-    >>> set_size = sys.getsizeof(set1)
-    >>> list_size = sys.getsizeof(list1)
-    ```
+```python
+>>> set1 = set(range(10000))
+>>> list1 = list(range(10000))
+>>> import sys
+>>> set_size = sys.getsizeof(set1)
+>>> list_size = sys.getsizeof(list1)
+>>> set_size / list_size
+>>> 6.551713800339762
 
-> > > set_size / list_size
-> > > 6.551713800339762
+```
 
-````
-- **Order:** Sets are not ordered, while lists are. As we've talked about, sets do not implement the separate dense table that dictionaries do, which results in a single **unordered** table.
+-   **Order:** Sets are not ordered, while lists are. As we've talked about, sets do not implement the separate dense table that dictionaries do, which results in a single **unordered** table.
 
-- **Hashing:** Lists do not require their elements to be hashable as opposed to sets.
+-   **Hashing:** Lists do not require their elements to be hashable as opposed to sets.
 
 ### dict vs namedtuple
 
-    Unlike sets and lists, dictionaries and `namedtuple` are quite different in their uses. The main uses for `namedtuple` are when you want an unmutable object that is much more readable than a dictionary and simpler than a class. As you will soon find out, `namedtuple` is also much smaller than a dictionary - so add that to your considerations!
+Unlike sets and lists, dictionaries and `namedtuple` are quite different in their uses. The main uses for `namedtuple` are when you want an unmutable object that is much more readable than a dictionary and simpler than a class. As you will soon find out, `namedtuple` is also much smaller than a dictionary - so add that to your considerations!
 
-    - **Speed:** Usually, you won't have to deal with very large `namedtuple` instances nor will you iterate over them. I will however show the speed comparisons of the lookup function shown above, just in case you will.
+-   **Speed:** Usually, you won't have to deal with very large `namedtuple` instances nor will you iterate over them. I will however show the speed comparisons of the lookup function shown above, just in case you will.
 
-    ```pycon
-    >>> type_ = namedtuple("test", [f"t{i}" for i in range(1000)])
-    >>> t1 = type_(*list(range(1000)))
-    >>> d1 = {f"t{i}": 0 for i in range(1000)}
-    >>> setup = "from __main__ import test_lookups, t1; iterable = t1"
-    >>> timeit("test_lookups(iterable)", setup=setup, number=10000)
-    64.43791548900026
-    >>> setup = "from __main__ import test_lookups, d1; iterable = d1"
-    >>> timeit("test_lookups(iterable)", setup=setup, number=10000)
-    0.5148220669998409
-````
+```python
+>>> type_ = namedtuple("test", [f"t{i}" for i in range(1000)])
+>>> t1 = type_(*list(range(1000)))
+>>> d1 = {f"t{i}": 0 for i in range(1000)}
+>>> setup = "from __main__ import test_lookups, t1; iterable = t1"
+>>> timeit("test_lookups(iterable)", setup=setup, number=10000)
+64.43791548900026
+>>> setup = "from __main__ import test_lookups, d1; iterable = d1"
+>>> timeit("test_lookups(iterable)", setup=setup, number=10000)
+0.5148220669998409
+```
 
-````
-    - **Space:** `namedtuple` takes drastically less space than a dictionary:
+-   **Space:** `namedtuple` takes drastically less space than a dictionary:
 
-    ```pycon
-    >>> from collections import namedtuple
-    >>> Car = namedtuple('Car', ['name', 'color', 'size'])
-    >>> car_tuple = Car(name="Toyota", color="black", size="big")
-    >>> car_dict = {"name": "Toyota", "color": "black", "size": "big"}
-    >>> import sys
-    >>> sys.getsizeof(car_tuple)
+```python
+>>> from collections import namedtuple
+>>> Car = namedtuple('Car', ['name', 'color', 'size'])
+>>> car_tuple = Car(name="Toyota", color="black", size="big")
+>>> car_dict = {"name": "Toyota", "color": "black", "size": "big"}
+>>> import sys
+>>> sys.getsizeof(car_tuple)
 64
-    >>> sys.getsizeof(car_dict)
+>>> sys.getsizeof(car_dict)
 232
-````
+```
 
 -   **Order:** Both are ordered (since Python 3.6).
 
 -   **Hashing:** `namedtuple` instances only allow strings to be their attribute names, as opposed to dictionaries that allow everything as long as it is hashable.
 
-{% alert %}
+{{< alert color="blue" >}}
+Python 3.7 added [data classes](https://docs.python.org/3/library/dataclasses.html) that you may find easier to use than `namedtuple`, though this article won't cover them.
 
-**Note**: Python 3.7 added [data classes](https://docs.python.org/3/library/dataclasses.html) that you may find easier to use than `namedtuple`, though this article won't cover them.
-
-{% endalert %}
+{{< / alert >}}
 
 ## Conclusion
 
 Congratulations! You've now had a comprehensive overview on Python hash tables. You've learned an important concept in computer science - hash tables, how they are implemented in Python, the awesome optimizations of Python dictionaries, and when to use Python hash tables. You now know that hash tables trade space for time, and you can even practice comparing size and speed of different data structures yourself. I hope that you feel more confident choosing data structures for your next project!
 
-You can get all of the code you saw in this tutorial by clicking the link below:
-
-{% optin "python-hash-tables" %}
+You can get all of the code you saw in this tutorial by clicking [here](https://github.com/AdamGold/materials/tree/patch-1/python-hash-tables).
 
 ## Further Reading
 

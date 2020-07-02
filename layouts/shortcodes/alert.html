@@ -1,0 +1,8 @@
+<div class="toast toast--{{ .Get "color" }} add-margin">
+	<div class="toast__content">
+		<p class="toast__type">Note</p>
+		<p class="toast__message">
+			{{.Inner | markdownify}}
+		</p>
+	</div>
+</div>

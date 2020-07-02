@@ -1,0 +1,12 @@
+<div class="toast add-margin">
+	<div class="toast__content">
+		<p class="toast__type">{{ .Get "name" }}</p>
+		<p class="toast__message dark-text">
+			{{.Get "text" | markdownify}}
+		</p>
+		<div class="toggle-solution" id="{{ .Get "id" }}">Show Solution</div>
+		<div class="solution dark-text" id="solution-{{ .Get "id" }}">
+			{{.Inner | markdownify}}
+		</div>
+	</div>
+</div>

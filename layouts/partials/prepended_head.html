@@ -1,14 +1,13 @@
-<title itemprop="name">{{ .Title }} | {{ .Site.Title }}</title>
-<meta itemprop="name" content="{{ .Title }} | {{ .Site.Title }}" />
-<meta name="application-name" content="{{ .Title }} | {{ .Site.Title }}" />
-<meta name="description" content="{{ .Params.description }}" />
-<meta itemprop="description" content="{{ .Params.description }}" />
+
 <base href="{{ .Permalink }}">
 <meta name="url" content="{{ .Permalink }}" />
 <meta property="og:locale" content="{{ .Language.Lang }}">
 <!-- To make sure this renders only in the article page, we check the section -->
-{{ if eq .Section "blog" }} 
-
+{{ if eq .Section "posts" }} 
+  <title itemprop="name">{{ .Title }} | {{ .Site.Title }}</title>
+  <meta itemprop="name" content="{{ .Title }} | {{ .Site.Title }}" />
+  <meta name="description" content="{{ .Params.description }}" />
+  <meta itemprop="description" content="{{ .Params.description }}" />
   <!-- Pagination meta tags for list pages only -->
   {{ $paginator := .Paginate (where .Pages "Section" "blog") }}
   {{ if $paginator }}
@@ -23,6 +22,7 @@
   {{end }}
 
   <meta property="og:type" content="article" />
+  <meta property="og:image" content="{{ .Params.cover | absURL }}" />
   <meta property="article:publisher" content="{{ .Site.Params.facebook }}" /> 
   <meta property="og:article:published_time" content={{ .Date.Format "2006-01-02T15:04:05Z0700" | safeHTML }} /> 
   <meta property="article:published_time" content={{ .Date.Format "2006-01-02T15:04:05Z0700" | safeHTML }} />
@@ -37,7 +37,11 @@
     <meta name="news_keywords" content="{{ index . 0 }}" />
     <meta property="article:section" content="{{ index . 0 }}" /> 
   {{ end }}
+{{ else }}
+  <title itemprop="name">{{ .Title }} | {{ .Site.Params.Subtitle }}</title>
+  <meta itemprop="name" content="{{ .Title }} | {{ .Site.Params.Subtitle }}" />
 {{ end }}
 
 <!-- SCRIPTS -->
 <script type="text/javascript" src="/scripts/global.js"></script>
+{{- partial "schema.html" . }}

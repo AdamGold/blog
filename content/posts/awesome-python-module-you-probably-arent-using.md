@@ -7,17 +7,14 @@ tags:
     - python
     - best-practices
     - modules
+cover: "/img/covers/awesome-python-modules.png"
+images:
+    - /img/covers/awesome-python-modules.png
 ---
 
-```python
-In [1]: import this
-The Zen of Python, by Tim Peters
-
-Beautiful is better than ugly.
-...
-```
-
 **Python** is a beautiful language, and it contains many built-in modules that aim to help us write better, prettier code.
+
+{{< img src="/img/posts/python_zen.png" >}}
 
 ### Objective
 

@@ -1,0 +1,29 @@
+<script type="application/ld+json">
+	{{ if eq .Section "posts" }}
+	{
+	  "@context": "https://schema.org",
+	  "@type": "BlogPosting",
+	  "headline": {{ .Title }},
+	  "image": {{ .Params.cover | absURL }},
+	  "datePublished": {{ .PublishDate }},
+	  "dateModified": {{ .Lastmod }},
+	  "author": {
+	    "@type": "Person",
+	    "name": {{ .Site.Title }}
+	  },
+	  "mainEntityOfPage": { "@type": "WebPage" },
+	  "description": {{ .Summary | plainify | safeHTML }},
+	  "keywords": [{{ range $i, $e := .Params.tags }}{{ if $i }}, {{ end }}{{ $e }}{{ end }}]
+	}
+	{{ end }}
+	{
+	  "@context": "https://schema.org",
+	  "@type": "Organization",
+	  "name": {{ printf "%s - %s" .Site.Params.Title .Site.Params.Subtitle }},
+	  "url": {{ .Site.BaseURL }},
+	  "sameAs": [
+	    "https://twitter.com/{{ .Site.Params.twitter }}",
+	    "https://github.com/{{ .Site.Params.github }}"
+	  ]
+	}
+</script>

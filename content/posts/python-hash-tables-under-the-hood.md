@@ -9,6 +9,9 @@ tags:
     - dictionary
 toc: true
 description: Are you a Python developer eager to learn more about the internals of the language, and to better understand how Python hash tables and data structures work? Or maybe you are experienced in other programming languages and want to understand how and where hash tables are implemented in Python? You've come to the right place!
+cover: "/img/covers/under_the_hood.jpeg"
+images:
+    - /img/covers/under_the_hood.jpeg
 ---
 
 Are you a Python developer eager to learn more about the internals of the language, and to better understand how Python hash tables and data structures work? Or maybe you are experienced in other programming languages and want to understand how and where hash tables are implemented in Python? You've come to the right place!
@@ -35,7 +38,7 @@ Before diving into the Python implementation details, you first need to understa
 
 Have you ever thought about how a Python dictionary is stored in memory? The memory in our computers can be thought of as a simple array with numeric indexes:
 
-{{< img class="white-img-div" src="/images/memory-array.png" >}}
+{{< img class="white-img-div" src="/img/memory-array.png" >}}
 So how come Python knows which value belongs to which key, when using non numeric keys? The simplest solution would be to have each element in the array store both key and value, iterate over the array and check element by element, until finding the one that contains the desired key. This solution is far from being perfomance efficient, as it would require iterating through the array repeatedly -- And this is where hash tables come to play.
 
 A hash table is a structure that is designed to store a list of key-value pairs, without compromising on speed and efficiency of manipulating and searching the structure.
@@ -68,7 +71,7 @@ length of the key % table_size (3)
 
 For example, `avocados` has 8 letters, therefore it would be placed in the 2nd index. This is the final array:
 
-{{< img class="white-img-div" src="/images/first-hash-table.png" >}}
+{{< img class="white-img-div" src="/img/first-hash-table.png" >}}
 
 Hurrah! You've just built your first hash table! Hold on for a second there. What happens when two keys has the same length? You won't be able to insert both at the same index. This is called a **hash collision**.
 
@@ -80,13 +83,13 @@ Hash collisions are practically unavoidable when hashing a random subset of a la
 
     Consider the following example of a simple hash table mapping names to phone numbers using your hash function from earlier:
 
-{{< img class="white-img-div" src="/images/open-addressing.png" >}}
+{{< img class="white-img-div" src="/img/open-addressing.png" >}}
 
 _John_ and _Lisa_ collide since they both hash to the index `0`. _Lisa_ was inserted after _John_, so it got inserted into one index further - `1`. Note that _Sandra Dee_ has a unique hash, but nevertheless collided with _Lisa Smith_, that had previously collided with _John Smith_.
 
 -   **Separate Chaining:** As opposed to open addressing, this strategy consists of storing multiple arrays. Each record contains a separate array which holds all of the elements with the same calculated index. The following is the sample table from earlier, using the separate chaining strategy:
 
-{{< img class="white-img-div" src="/images/separate-chaining.png" >}}
+{{< img class="white-img-div" src="/img/separate-chaining.png" >}}
 
 This time, _Sandra Dee_ did not collide with _Sandra_ since each element holds a pointer to an array of collided records.
 
@@ -139,7 +142,7 @@ Much like linear probing, the first part of this algorithm proceeds in a fixed m
 
 In a perfect world with no collisions, deleting elements would be simple: just remove the element at the desired index so it can be refilled with other values. Unfortunately, we do not live in a perfect world, and collisions happen frequently. Remember the open addressing example from before?
 
-{{< img class="white-img-div" src="/images/open-addressing.png" >}}
+{{< img class="white-img-div" src="/img/open-addressing.png" >}}
 
 Now assume you wanted to delete _John Smith_ from the table. Seems trivial, right? Hash _John Smith_ and delete the element located at the calculated index. Now, you might have already noticed the problem in this approach. After deleting _John_, _Sandra_ is unreachable! Hashing _Sandra_ will get us to an empty slot. For this exact reason, Python implements dummy values - Instead of completely erasing _John's_ element, it would place a fixed dummy value there. When the algorithm faces a dummy value, it knows that there was a value there but it got deleted. It then keeps probing forward.
 
@@ -160,17 +163,17 @@ On to the [lookup method](https://github.com/python/cpython/blob/master/Objects/
 ```python {linenos=inline}
     DUMMY = -2
     def lookup(key: Any, hash_: int) -> Tuple[int, Any]:
-    mask = len(table) - 1
-    freeslot = None
-    for index in generate_probes(hash_, mask):
-        elem = table[index]
-        if elem is None:
-            return (index, None) if freeslot is None else (freeslot, DUMMY)
-        elif elem == DUMMY:
-            if freeslot is None:
-                freeslot = index
-        elif elem.key is key or (elem.hash == hash_ and elem.key == key):
-            return (index, elem)
+        mask = len(table) - 1
+        freeslot = None
+        for index in generate_probes(hash_, mask):
+            elem = table[index]
+            if elem is None:
+                return (index, None) if freeslot is None else (freeslot, DUMMY)
+            elif elem == DUMMY:
+                if freeslot is None:
+                    freeslot = index
+            elif elem.key is key or (elem.hash == hash_ and elem.key == key):
+                return (index, elem)
 ```
 
 -   **Line 5** calculates the index with the `generate_probes` method shown in the next code block below.
@@ -198,7 +201,7 @@ On to the [lookup method](https://github.com/python/cpython/blob/master/Objects/
 
 -   **Line 3** masks the hash bits with the size of the table minus one - For example, in a table with the size of 8, the last 3 bits would be taken (111 in binary equals 7 in decimal, so 3 bits can represent 0-7). The following demonstration shows a hash example with its last 3 bits taken for indexing:
 
-{{< img class="white-img-div" src="/images/last_3_bits.png" >}}
+{{< img class="white-img-div" src="/img/last_3_bits.png" >}}
 
 -   **Line 7**: Remember that the algorithm goes back to the `generate_probes` method if the desired wasn't found? This is the line that it goes back to. It computes the new hash using a random probe and yields control back to the `lookup` method.
 
@@ -206,11 +209,11 @@ If you were to write the search operation, it would have looked along the lines 
 
 ```python {linenos=inline}
     def search(key: Any) -> Any:  # usually implemented as __getitem__
-    hashvalue = hash(key)
-    index, elem = lookup(key, hashvalue)
-    if elem is None or elem == DUMMY:
-        raise KeyError(key)
-    return table[index]
+        hashvalue = hash(key)
+        index, elem = lookup(key, hashvalue)
+        if elem is None or elem == DUMMY:
+            raise KeyError(key)
+        return table[index]
 ```
 
 As I've mentioned before, the `DUMMY` and `None` handling is done within the caller - while this specific method raises a `KeyError`, other operations could have still used that index as you will soon see.
@@ -372,7 +375,7 @@ Python 3.3 [introduced](https://www.python.org/dev/peps/pep-0412/) key-sharing d
 
 The following visual demonstrates three instances of the same class:
 
-{{< img class="white-img-div" src="/images/shared-keys.png" >}}
+{{< img class="white-img-div" src="/img/shared-keys.png" >}}
 
 You can see that each instance only holds its values, while there is a single, shared place in memory for the keys.
 
@@ -626,7 +629,7 @@ This method checks if the dictionary contains a certain key. It does so by check
 
 ```python {linenos=inline}
     def __iter__(self):
-            return iter([dict_key.key for dict_key in self.key]s)
+        return iter([dict_key.key for dict_key in self.key]s)
 ```
 
 The dictionary's keys list holds `DictKey` instances. This method creates a new list of actual the actual keys (without the wrapper class) and wraps it inside of an iterable.

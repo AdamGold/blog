@@ -4,6 +4,7 @@ title = "Adam Gold"
 theme = "hello-friend"
 googleAnalytics = "UA-171406341-1"
 disqusShortname = "adam-gold"
+enableRobotsTXT = true
 
 [params]
   # dir name of your blog content (default is `content/posts`).
@@ -26,6 +27,10 @@ disqusShortname = "adam-gold"
   # Show full page content in RSS feed items
   #(default is Description or Summary metadata in the front matter)
   rssFullText = true
+
+  twitter = "adamgolds"
+  github = "adamgold"
+  description = "Writing about security and programming"
 
 [languages]
   [languages.en]

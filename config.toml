@@ -15,7 +15,7 @@ enableRobotsTXT = true
   defaultTheme = "dark"
 
   # if you set this to 0, only submenu trigger will be visible
-  showMenuItems = 3
+  showMenuItems = 4
 
   # Show reading time in minutes for posts
   showReadingTime = true
@@ -71,3 +71,7 @@ enableRobotsTXT = true
         identifier = "linkedin"
         name = "LinkedIn"
         url = "https://www.linkedin.com/in/adamgold7/"
+      [[languages.en.menu.main]]
+        identifier = "rss"
+        name = "RSS"
+        url = "/index.xml"
